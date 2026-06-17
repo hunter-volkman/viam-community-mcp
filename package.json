@@ -2,7 +2,7 @@
   "name": "viam-community-mcp",
   "version": "0.0.0",
   "private": true,
-  "description": "Unofficial Codex-first MCP server for fake-backed read-only Viam fleet inspection.",
+  "description": "Unofficial Codex-first MCP server for read-only Viam fleet inspection.",
   "type": "module",
   "bin": {
     "viam-mcp": "./dist/index.js"
@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "@viamrobotics/sdk": "^0.73.0",
     "zod": "^4.4.3"
   }
 }

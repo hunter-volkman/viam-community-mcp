@@ -4,7 +4,7 @@ export type LogSeverity = "ERROR" | "WARN" | "INFO";
 
 export interface WhoamiResult {
   authenticated: boolean;
-  mode: "fake";
+  mode: "fake" | "live";
   subject: string;
   org: {
     id: string;

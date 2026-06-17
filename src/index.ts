@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { readViamConfig } from "./config.js";
 import { toSafeToolError } from "./errors.js";
 import { createViamMcpServer } from "./server.js";
-import { FakeViamClient } from "./viam/fakeClient.js";
+import { createLiveViamClient } from "./viam/liveClient.js";
 
 async function main(): Promise<void> {
-  const server = createViamMcpServer(new FakeViamClient());
+  const viamClient = await createLiveViamClient(readViamConfig());
+  const server = createViamMcpServer(viamClient);
   await server.connect(new StdioServerTransport());
 }
 

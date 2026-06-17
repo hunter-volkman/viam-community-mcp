@@ -1,23 +1,21 @@
 # viam-community-mcp
 
-`viam-community-mcp` is an unofficial read-only MCP server for Codex-first inspection of Viam robotics fleets.
-
-This project is not affiliated with, endorsed by, or supported by Viam.
+`viam-community-mcp` is an unofficial, and read-only, MCP server to inspect fleets of Viam machines.
 
 ## Current Status
 
-M1 is a fake-client-backed local stdio MCP server.
+M2 is a local stdio MCP server with live read-only Viam calls behind a small `ViamClient` interface.
 
-The server starts and exposes four read-only tools backed by deterministic fake data only. No live Viam calls are made.
+The server starts with environment-variable credentials and exposes four read-only tools. Normal tests still use deterministic fake data and do not require credentials or network access.
 
 ## Implemented Tools
 
-* `viam_whoami` - reports the fake identity and organization used by the local M1 server.
-* `viam_list_machines` - lists fake machines with IDs, names, locations, status, health, and last-seen timestamps.
-* `viam_get_recent_errors` - returns bounded fake recent error logs, optionally filtered by machine ID and since timestamp.
-* `viam_summarize_fleet_health` - summarizes fake machine health, recent errors, and evidence-backed machines to inspect first.
+* `viam_whoami` - reports whether the configured Viam client can identify the scoped organization.
+* `viam_list_machines` - lists visible Viam machines with IDs, names, locations, status, health, and last-seen timestamps when available.
+* `viam_get_recent_errors` - returns bounded recent error logs, optionally filtered by machine ID and since timestamp.
+* `viam_summarize_fleet_health` - summarizes machine health, recent errors, and evidence-backed machines to inspect first.
 
-All tools route through a small `ViamClient` interface and use `FakeViamClient` in M1.
+All tools route through `ViamClient`. Runtime uses the live client; tests use `FakeViamClient`.
 
 ## V0 Scope
 
@@ -38,11 +36,14 @@ npm install
 Build the package, then run the stdio server:
 
 ```bash
+export VIAM_API_KEY_ID=replace-me
+export VIAM_API_KEY=replace-me
+export VIAM_ORG_ID=replace-me
 npm run build
 node dist/index.js
 ```
 
-The M1 server uses fake data and does not read credentials.
+The server does not load `.env` files itself. If you keep credentials in a local `.env`, load them into the environment before starting the server and do not commit that file.
 
 ## Development Commands
 
@@ -53,11 +54,17 @@ npm run lint
 npm run build
 ```
 
+`npm test` includes a live smoke test file, but that file skips unless `VIAM_API_KEY_ID`, `VIAM_API_KEY`, and `VIAM_ORG_ID` are all present.
+
+To run only the live smoke check with credentials already set:
+
+```bash
+npm test -- test/liveSmoke.test.ts
+```
+
 ## Environment Variables
 
-M1 does not read environment variables.
-
-Future live Viam support will read credentials from:
+Required for the runtime server:
 
 ```bash
 VIAM_API_KEY_ID=replace-me
@@ -75,9 +82,9 @@ Detailed Codex setup docs are planned for M3.
 
 ## Example Prompts
 
-* What Viam machines are visible to this fake MCP server?
-* Which fake machines look unhealthy?
-* Show recent fake Viam errors and what I should inspect first.
+* What Viam machines are visible to this MCP server?
+* Which machines look unhealthy?
+* Show recent Viam errors and what I should inspect first.
 
 ## Safety Model
 
@@ -85,6 +92,6 @@ Inspection before action. The project is scoped so Codex can inspect fleet-like 
 
 ## Limitations
 
-M1 uses deterministic fake data only. Live Viam API support is not implemented yet.
+Live output is intentionally concise and bounded. The server does not return raw Viam API responses, raw machine configs, credential values, host stacks, or unbounded logs.
 
-Tool output is intentionally concise and bounded. It preserves evidence such as fake machine IDs, names, timestamps, severities, and short messages, but it does not provide a real diagnosis of any Viam fleet.
+The live client currently uses organization lookup, machine summaries, and bounded part log reads. It does not control robots, call `DoCommand`, mutate config, expose remote HTTP, or provide a raw Viam API proxy.

@@ -62,7 +62,7 @@ export type FleetHealthToolInput = z.infer<typeof fleetHealthInputSchema>;
 
 export interface WhoamiToolOutput {
   authenticated: boolean;
-  mode: "fake";
+  mode: WhoamiResult["mode"];
   subject: string;
   org: WhoamiResult["org"];
   warnings: string[];
@@ -108,7 +108,7 @@ export async function viamWhoami(client: ViamClient): Promise<WhoamiToolOutput> 
 
   return {
     ...identity,
-    warnings: ["Using deterministic fake data. Live Viam calls are not implemented in M1."]
+    warnings: identity.mode === "fake" ? ["Using deterministic fake data."] : []
   };
 }
 
@@ -118,7 +118,7 @@ export async function viamListMachines(client: ViamClient): Promise<ListMachines
   return {
     machineCount: machines.length,
     machines,
-    unknowns: ["Live Viam connectivity and data sync status are not checked by the fake client."]
+    unknowns: machineUnknowns(machines)
   };
 }
 
@@ -133,7 +133,7 @@ export async function viamGetRecentErrors(
     filters: normalized,
     errorCount: errors.length,
     errors,
-    unknowns: ["Only deterministic fake error logs are available in M1."]
+    unknowns: ["Recent error results are bounded and may omit logs beyond the requested limit or scan caps."]
   };
 }
 
@@ -155,7 +155,9 @@ export async function viamSummarizeFleetHealth(
     recentErrors,
     inspectFirst: buildInspectionHints(machines, recentErrors),
     unknowns: [
-      "Live Viam connectivity, data sync status, and full machine configuration are not available in fake-client M1."
+      ...machineUnknowns(machines),
+      "Data sync status and full machine configuration are not returned by these tools.",
+      "Recent error results are bounded and may omit logs beyond the requested limit or scan caps."
     ]
   };
 }
@@ -220,6 +222,16 @@ function normalizeLimit(value: number | undefined, fallback: number, fieldName: 
 
 function isUnhealthyMachine(machine: MachineSummary): boolean {
   return machine.health !== "healthy" || machine.status === "offline";
+}
+
+function machineUnknowns(machines: MachineSummary[]): string[] {
+  const unknowns = ["Resource-level health, data sync status, and full machine configuration are not returned by this tool."];
+
+  if (machines.some((machine) => machine.lastSeen === "unknown")) {
+    unknowns.push("Some machines did not include last-seen timestamps.");
+  }
+
+  return unknowns;
 }
 
 function buildInspectionHints(machines: MachineSummary[], recentErrors: LogEntry[]): MachineInspectionHint[] {

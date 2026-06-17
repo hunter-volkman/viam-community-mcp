@@ -1,0 +1,33 @@
+{
+  "name": "viam-community-mcp",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Unofficial Codex-first MCP server scaffold for read-only Viam fleet inspection.",
+  "type": "module",
+  "bin": {
+    "viam-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "mcp",
+    "codex",
+    "viam"
+  ],
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@eslint/js": "^9.30.0",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.30.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.35.0",
+    "vitest": "^3.2.0"
+  }
+}

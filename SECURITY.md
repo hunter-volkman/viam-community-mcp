@@ -98,7 +98,9 @@ The V0 response to these risks is narrow scope, read-only tools, explicit schema
 
 ## Credentials
 
-The server reads Viam credentials from environment variables:
+M1 fake-client mode does not read Viam credentials.
+
+Future live Viam support will read credentials from environment variables:
 
 ```bash id="y0x6ej"
 VIAM_API_KEY_ID=...

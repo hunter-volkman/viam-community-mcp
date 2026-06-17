@@ -1,27 +1,27 @@
 # viam-community-mcp
 
-`viam-community-mcp` is an unofficial community project for a Codex-first MCP server that will inspect and diagnose Viam robotics fleets.
+`viam-community-mcp` is an unofficial read-only MCP server for Codex-first inspection of Viam robotics fleets.
 
 This project is not affiliated with, endorsed by, or supported by Viam.
 
 ## Current Status
 
-M0 is repo rails only. The TypeScript package can build, typecheck, lint, and test, but it does not start an MCP server yet.
+M1 is a fake-client-backed local stdio MCP server.
 
-No MCP tools are implemented yet. No Viam client is implemented yet. No live Viam calls are made.
+The server starts and exposes four read-only tools backed by deterministic fake data only. No live Viam calls are made.
 
-## Intended V0 Scope
+## Implemented Tools
 
-Planned V0 behavior is local-only, stdio-only, read-only, and Codex-first.
+* `viam_whoami` - reports the fake identity and organization used by the local M1 server.
+* `viam_list_machines` - lists fake machines with IDs, names, locations, status, health, and last-seen timestamps.
+* `viam_get_recent_errors` - returns bounded fake recent error logs, optionally filtered by machine ID and since timestamp.
+* `viam_summarize_fleet_health` - summarizes fake machine health, recent errors, and evidence-backed machines to inspect first.
 
-The intended tool surface for a later milestone is:
+All tools route through a small `ViamClient` interface and use `FakeViamClient` in M1.
 
-* `viam_whoami`
-* `viam_list_machines`
-* `viam_get_recent_errors`
-* `viam_summarize_fleet_health`
+## V0 Scope
 
-Those tools are not implemented in M0.
+V0 behavior is local-only, stdio-only, read-only, and Codex-first.
 
 ## Out of Scope
 
@@ -32,6 +32,17 @@ V0 will not control robots, move hardware, call arbitrary `DoCommand`, mutate co
 ```bash
 npm install
 ```
+
+## Run
+
+Build the package, then run the stdio server:
+
+```bash
+npm run build
+node dist/index.js
+```
+
+The M1 server uses fake data and does not read credentials.
 
 ## Development Commands
 
@@ -44,7 +55,9 @@ npm run build
 
 ## Environment Variables
 
-Future live Viam support will read credentials from environment variables:
+M1 does not read environment variables.
+
+Future live Viam support will read credentials from:
 
 ```bash
 VIAM_API_KEY_ID=replace-me
@@ -56,12 +69,22 @@ Do not paste credentials into prompts. Do not commit `.env`.
 
 ## Codex Setup
 
-Codex MCP setup is deferred until the MCP server exists. M0 only creates the package rails.
+After `npm run build`, configure Codex to run the local stdio server with `node dist/index.js` from this repo.
+
+Detailed Codex setup docs are planned for M3.
+
+## Example Prompts
+
+* What Viam machines are visible to this fake MCP server?
+* Which fake machines look unhealthy?
+* Show recent fake Viam errors and what I should inspect first.
 
 ## Safety Model
 
-Inspection before action. The project is scoped so Codex can inspect fleet state in a later milestone, but cannot operate hardware.
+Inspection before action. The project is scoped so Codex can inspect fleet-like state, but cannot operate hardware.
 
 ## Limitations
 
-M0 is not useful as an MCP server yet. It is only the smallest project skeleton needed for later milestones.
+M1 uses deterministic fake data only. Live Viam API support is not implemented yet.
+
+Tool output is intentionally concise and bounded. It preserves evidence such as fake machine IDs, names, timestamps, severities, and short messages, but it does not provide a real diagnosis of any Viam fleet.
